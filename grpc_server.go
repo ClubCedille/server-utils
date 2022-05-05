@@ -9,9 +9,9 @@ func NewGrpcServer() *GrpcServer {
 }
 
 // Make sure struct implements interface.
-var _ Machine = &GrpcServer{}
+var _ Connection = &GrpcServer{}
 
-func (g *GrpcServer) Run(ctx context.Context, req MachineRequest) error {
+func (g *GrpcServer) Run(ctx context.Context, req ConnectionRequest) error {
 	panic("implement me")
 }
 

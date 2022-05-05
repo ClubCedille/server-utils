@@ -13,13 +13,13 @@ const (
 	StatusWhatever // TODO: Remove this
 )
 
-type MachineRequest struct {
+type ConnectionRequest struct {
 	Port       int32
 	ShutdownMs int32
 }
 
-type Machine interface {
-	Run(ctx context.Context, req MachineRequest) error
+type Connection interface {
+	Run(ctx context.Context, req ConnectionRequest) error
 
 	Status() Status
 }
