@@ -11,9 +11,9 @@ func NewHttpServer() *HttpServer {
 }
 
 // Make sure struct implements interface.
-var _ Server = &HttpServer{}
+var _ Machine = &HttpServer{}
 
-func (g *HttpServer) Run(ctx context.Context, opts Request) error {
+func (g *HttpServer) Run(ctx context.Context, req MachineRequest) error {
 	panic("implement me")
 }
 
