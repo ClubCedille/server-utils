@@ -85,7 +85,7 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 	}()
 
 	// Close channel
-	close(errCh) // TODO: this might be wrong, make sure errCh it properly closed
+	// close(errCh) // TODO: this might be wrong, make sure errCh it properly closed
 
 	// Catch error and return it
 	select {
