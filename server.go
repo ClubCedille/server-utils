@@ -11,17 +11,53 @@ import (
 	"time"
 )
 
-type server interface {
-	gracefulShutdown(ctx context.Context) error
+type Status int
+
+const (
+	// Running is the status
+	// for a running server
+	Running Status = iota
+
+	// Stopped is the status
+	// for a stopped server
+	Stopped
+)
+
+// RunRequest is a set of parameters
+// passed to the 'Run' function of each
+// server
+type RunRequest struct {
+	// Port is the port number on which
+	// the server will listen to
+	Port int32
+
+	// ShutdownTimeoutMs is the amount
+	// of milliseconds to wait for when
+	// shutting down the server
+	ShutdownTimeoutMs int32
+}
+
+// Server represents any kind of server
+// that is able to run, shutdown and
+// fetch a status from.
+type Server interface {
+	// Run runs the server on a given port
+	// and gracefully shutdowns if necessary
+	Run(ctx context.Context, req RunRequest) error
+
+	// Status returns the current status
+	// of the server
+	Status() Status
+}
+
+// serverOperations is an internal interface meant
+// to serve as a helper for server functions.
+type serverOperations interface {
+	gracefullyShutdown(ctx context.Context) error
 	serve(port int32) error
 }
 
-// Make sure structs implement
-// the Server interface
-var _ server = &GrpcServer{}
-var _ server = &HttpServer{}
-
-func startServer(ctx context.Context, s server, req ConnectionRequest) error {
+func startServer(ctx context.Context, s serverOperations, req RunRequest) error {
 	ctx, cancel := context.WithTimeout(
 		ctx,
 		time.Millisecond*time.Duration(req.ShutdownTimeoutMs),
@@ -42,7 +78,7 @@ func startServer(ctx context.Context, s server, req ConnectionRequest) error {
 
 		// Pass returned error from shutdown
 		// to error channel
-		errCh <- s.gracefulShutdown(ctx)
+		errCh <- s.gracefullyShutdown(ctx)
 
 		// grpc.Stop() // leads to error while receiving stream response: rpc error: code = Unavailable desc = transport is closing
 		wg.Done()

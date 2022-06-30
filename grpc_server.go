@@ -8,24 +8,30 @@ import (
 	"google.golang.org/grpc"
 )
 
+// GrpcServer represents an instance
+// of *grpc.Server, which gracefully shutdowns
+// and has a status
 type GrpcServer struct {
 	status Status
 	server *grpc.Server
 }
 
+// NewGrpcServer creates a new instance
+// of *GrpcServer
 func NewGrpcServer(server *grpc.Server) *GrpcServer {
 	return &GrpcServer{server: server}
 }
 
 // Make sure struct implements interface.
-var _ Connection = &GrpcServer{}
+var _ Server = &GrpcServer{}
+var _ serverOperations = &GrpcServer{}
 
-func (g *GrpcServer) Run(ctx context.Context, req ConnectionRequest) error {
+func (g *GrpcServer) Run(ctx context.Context, req RunRequest) error {
 	return startServer(ctx, g, req)
 }
 
 func (g *GrpcServer) Status() Status {
-	panic("implement me")
+	return g.status
 }
 
 func (g *GrpcServer) serve(port int32) error {
@@ -41,20 +47,28 @@ func (g *GrpcServer) serve(port int32) error {
 		return fmt.Errorf("failed to serve gRPC connection: %s", err)
 	}
 
+	// Update server status to Started
+	g.status = Running
+
 	// No error occured, exit
 	return nil
 }
 
-func (g *GrpcServer) gracefulShutdown(ctx context.Context) error {
+func (g *GrpcServer) gracefullyShutdown(ctx context.Context) error {
 	doneCh := make(chan bool, 1)
 	defer close(doneCh)
 	go func() {
 		g.server.GracefulStop()
 		doneCh <- true
 	}()
+
 	select {
 	case <-ctx.Done():
 	case <-doneCh:
 	}
+
+	// Update server status to Closed
+	g.status = Stopped
+
 	return nil
 }
