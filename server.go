@@ -3,12 +3,13 @@ package serverutils
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/clubcedille/logger"
 )
 
 type Status int
@@ -63,6 +64,7 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 		time.Millisecond*time.Duration(req.ShutdownTimeoutMs),
 	)
 	defer cancel()
+	logs := logger.NewFromContextOrDefault(ctx)
 
 	// Catch some signals and handle them gracefully
 	sigCh := make(chan os.Signal, 1)
@@ -73,7 +75,7 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 
 	go func() {
 		sig := <-sigCh
-		log.Printf("got signal %v, attempting graceful shutdown\n", sig)
+		logs.Errorf("got signal %v, attempting graceful shutdown\n", sig)
 		cancel()
 
 		// Pass returned error from shutdown
@@ -85,7 +87,9 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 	}()
 
 	// Close channel
-	// close(errCh) // TODO: this might be wrong, make sure errCh it properly closed
+	go func() {
+		close(errCh)
+	}()
 
 	// Catch error and return it
 	select {
@@ -100,6 +104,9 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 		return fmt.Errorf("failed to serve connection: %s", err)
 	}
 	wg.Wait()
+
+	// Log what's happening
+	logs.Infof("Server running on port %d\n", req.Port)
 
 	return nil
 }
