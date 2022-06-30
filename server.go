@@ -94,7 +94,7 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 	}
 
 	// Close channel after function ends
-	close(errCh)
+	// close(errCh)
 
 	// Log what's happening
 	logs.Infof("Server running on port %d\n", req.Port)
