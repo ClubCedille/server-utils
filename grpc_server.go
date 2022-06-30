@@ -56,7 +56,6 @@ func (g *GrpcServer) serve(port int32) error {
 
 func (g *GrpcServer) gracefullyShutdown(ctx context.Context) error {
 	doneCh := make(chan bool, 1)
-	defer close(doneCh)
 	go func() {
 		g.server.GracefulStop()
 		doneCh <- true
@@ -66,6 +65,10 @@ func (g *GrpcServer) gracefullyShutdown(ctx context.Context) error {
 	case <-ctx.Done():
 	case <-doneCh:
 	}
+
+	go func() {
+		defer close(doneCh)
+	}()
 
 	// Update server status to Closed
 	g.status = Stopped
