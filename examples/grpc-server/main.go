@@ -17,7 +17,7 @@ func main() {
 	grpcServer := serverutils.NewGrpcServer(server)
 
 	// Run newly created gRPC server
-	req := serverutils.ConnectionRequest{
+	req := serverutils.RunRequest{
 		Port:              3000,
 		ShutdownTimeoutMs: 100000,
 	}

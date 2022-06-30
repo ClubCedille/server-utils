@@ -20,7 +20,7 @@ func main() {
 	httpServer := serverutils.NewHttpServer(server)
 
 	// Run newly created gRPC server
-	req := serverutils.ConnectionRequest{
+	req := serverutils.RunRequest{
 		Port:              int32(port),
 		ShutdownTimeoutMs: 100000,
 	}
