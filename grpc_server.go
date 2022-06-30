@@ -59,19 +59,15 @@ func (g *GrpcServer) gracefullyShutdown(ctx context.Context) error {
 	go func() {
 		g.server.GracefulStop()
 		doneCh <- true
+
+		// Update server status to Closed
+		g.status = Stopped
 	}()
 
 	select {
 	case <-ctx.Done():
 	case <-doneCh:
 	}
-
-	go func() {
-		defer close(doneCh)
-	}()
-
-	// Update server status to Closed
-	g.status = Stopped
 
 	return nil
 }
