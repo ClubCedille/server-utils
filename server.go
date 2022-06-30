@@ -86,10 +86,8 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 		wg.Done()
 	}()
 
-	// Close channel
-	go func() {
-		close(errCh)
-	}()
+	// Close channel after function ends
+	defer close(errCh)
 
 	// Catch error and return it
 	select {
