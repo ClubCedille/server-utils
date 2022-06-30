@@ -80,7 +80,9 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 
 		// Pass returned error from shutdown
 		// to error channel
-		errCh <- s.gracefullyShutdown(ctx)
+		if err := s.gracefullyShutdown(ctx); err != nil {
+			errCh <- err
+		}
 
 		// grpc.Stop() // leads to error while receiving stream response: rpc error: code = Unavailable desc = transport is closing
 		wg.Done()
@@ -94,7 +96,9 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 	}
 
 	// Close channel after function ends
-	// close(errCh)
+	go func() {
+		defer close(errCh)
+	}()
 
 	// Log what's happening
 	logs.Infof("Server running on port %d\n", req.Port)
