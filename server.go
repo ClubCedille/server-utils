@@ -86,9 +86,6 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 		wg.Done()
 	}()
 
-	// Close channel after function ends
-	defer close(errCh)
-
 	// Catch error and return it
 	select {
 	case <-ctx.Done():
@@ -96,15 +93,18 @@ func startServer(ctx context.Context, s serverOperations, req RunRequest) error 
 		return fmt.Errorf("failed to shutdown server: %s", err)
 	}
 
+	// Close channel after function ends
+	close(errCh)
+
+	// Log what's happening
+	logs.Infof("Server running on port %d\n", req.Port)
+
 	// Start the gRPC server
 	err := s.serve(req.Port)
 	if err != nil {
 		return fmt.Errorf("failed to serve connection: %s", err)
 	}
 	wg.Wait()
-
-	// Log what's happening
-	logs.Infof("Server running on port %d\n", req.Port)
 
 	return nil
 }

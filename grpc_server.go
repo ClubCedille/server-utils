@@ -41,14 +41,14 @@ func (g *GrpcServer) serve(port int32) error {
 		return fmt.Errorf("failed to listen on port %d: %s", port, err)
 	}
 
+	// Update server status to Started
+	g.status = Running
+
 	// Serve gRPC server
 	err = g.server.Serve(conn)
 	if err != nil {
 		return fmt.Errorf("failed to serve gRPC connection: %s", err)
 	}
-
-	// Update server status to Started
-	g.status = Running
 
 	// No error occured, exit
 	return nil
