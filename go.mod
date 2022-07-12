@@ -4,7 +4,7 @@ go 1.18
 
 require (
 	github.com/clubcedille/logger v1.0.8
-	google.golang.org/grpc v1.47.0
+	google.golang.org/grpc v1.48.0
 )
 
 require (
